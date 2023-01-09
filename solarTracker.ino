@@ -55,7 +55,7 @@ unsigned long delaytime2 = 2000;
 unsigned int  drehzeit = 50;
 int i, ldr1, ldr2, ldrmax = 0;
 int orldr, urldr, olldr, ulldr;
-int orint, urint, olint, ulint;
+int orint, urint, olint, ulint, action;
 bool voTaster, vuTaster, hlTaster, hrTaster;
 byte pfeilLinks[8]       = { B00000000, B00010000, B00111000, B01111100, B00010000, B00010000, B00010000, B00000000 };
 byte pfeilRechts[8]      = { B00000000, B00000000, B00010000, B00010000, B00010000, B01111100, B00111000, B00010000 };
@@ -150,62 +150,138 @@ void solarTracker() {
   Serial.println(diff_links);*/
   // Horizontale Bewegung
   
-  if ( diff_oben < neg_toleranz && diff_unten < neg_toleranz ){ // &&  hrTaster) {
-    // Bewegung nach rechts
-    for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilRechts[m]);
-    Serial.print(" <- ");
-    Serial.print(diff_oben);
-    Serial.print(" | ");
-    Serial.println(diff_unten);
-    digitalWrite(HRDIR, HIGH);  //one way
-    digitalWrite(HLDIR, LOW);
-    delay(drehzeit);
-    digitalWrite(HRDIR, LOW);
-  } else if ( diff_oben > pos_toleranz && diff_unten > pos_toleranz ){ //(olint < orint || ulint < urint) && hlTaster) {
-    //Bewegung nach links
-    for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilLinks[m]);
-    Serial.print(" -> ");
-    Serial.print(diff_oben);
-    Serial.print(" | ");
-    Serial.println(diff_unten);
-    digitalWrite(HRDIR, LOW);  //reverse
-    digitalWrite(HLDIR, HIGH);
-    delay(drehzeit);
-    digitalWrite(HLDIR, LOW);
-  } else {
-    digitalWrite(HRDIR, LOW);
-    digitalWrite(HLDIR, LOW);
-    delay(100);
+  if (      (diff_oben < neg_toleranz && diff_unten < neg_toleranz) && (diff_rechts < neg_toleranz && diff_links < neg_toleranz) )
+    action = 0;
+  else if ( (diff_oben < neg_toleranz && diff_unten < neg_toleranz) && (diff_rechts > pos_toleranz && diff_links > pos_toleranz) )
+    action = 1;
+  else if ( (diff_oben > pos_toleranz && diff_unten > pos_toleranz) && (diff_rechts < neg_toleranz && diff_links < neg_toleranz) )
+    action = 2;
+  else if ( (diff_oben > pos_toleranz && diff_unten > pos_toleranz) && (diff_rechts > pos_toleranz && diff_links > pos_toleranz) )
+    action = 3;
+  else if ( diff_oben < neg_toleranz && diff_unten < neg_toleranz )
+    action = 4;
+  else if ( diff_oben > pos_toleranz && diff_unten > pos_toleranz )
+    action = 5;
+  else if ( diff_rechts < neg_toleranz && diff_links < neg_toleranz )
+    action = 6;
+  else if ( diff_rechts > pos_toleranz && diff_links > pos_toleranz )
+    action = 7;
+  // Switch case
+  switch (action)  {
+    case 0:
+      // Bewegung nach rechts
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilRechtsUnten[m]);
+      Serial.print(" <- ");
+      Serial.print(diff_oben);
+      Serial.print(" | ");
+      Serial.println(diff_unten);
+      digitalWrite(HRDIR, HIGH);  //one way
+      digitalWrite(HLDIR, LOW);
+      digitalWrite(VODIR, LOW);
+      digitalWrite(VUDIR, HIGH);
+      delay(drehzeit);
+      digitalWrite(HRDIR, LOW);
+      digitalWrite(VUDIR, LOW);
+      break;
+    case 1:
+      // Bewegung nach rechts
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilRechtsOben[m]);
+      Serial.print(" <- ");
+      Serial.print(diff_oben);
+      Serial.print(" | ");
+      Serial.println(diff_unten);
+      digitalWrite(HRDIR, HIGH);  //one way
+      digitalWrite(HLDIR, LOW);
+      digitalWrite(VODIR, HIGH);
+      digitalWrite(VUDIR, LOW);
+      delay(drehzeit);
+      digitalWrite(VODIR, LOW);
+      digitalWrite(HRDIR, LOW);
+      break;
+    case 2:
+      //Bewegung nach links
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilLinksUnten[m]);
+      Serial.print(" -> ");
+      Serial.print(diff_oben);
+      Serial.print(" | ");
+      Serial.println(diff_unten);
+      digitalWrite(HRDIR, LOW);  //reverse
+      digitalWrite(HLDIR, HIGH);
+      digitalWrite(VODIR, LOW);
+      digitalWrite(VUDIR, HIGH);
+      delay(drehzeit);
+      digitalWrite(HLDIR, LOW);
+      digitalWrite(VUDIR, LOW);
+      break;
+    case 3:
+      //Bewegung nach links
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilLinksOben[m]);
+      Serial.print(" -> ");
+      Serial.print(diff_oben);
+      Serial.print(" | ");
+      Serial.println(diff_unten);
+      digitalWrite(HRDIR, LOW);  //reverse
+      digitalWrite(HLDIR, HIGH);
+      digitalWrite(VODIR, HIGH);
+      digitalWrite(VUDIR, LOW);
+      delay(drehzeit);
+      digitalWrite(HLDIR, LOW);
+      digitalWrite(VODIR, LOW);
+      break;
+    case 4:
+      // Bewegung nach rechts
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilRechts[m]);
+      Serial.print(" <- ");
+      Serial.print(diff_oben);
+      Serial.print(" | ");
+      Serial.println(diff_unten);
+      digitalWrite(HRDIR, HIGH);  //one way
+      digitalWrite(HLDIR, LOW);
+      delay(drehzeit);
+      digitalWrite(HRDIR, LOW);
+      break;
+    case 5:
+      //Bewegung nach links
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilLinks[m]);
+      Serial.print(" -> ");
+      Serial.print(diff_oben);
+      Serial.print(" | ");
+      Serial.println(diff_unten);
+      digitalWrite(HRDIR, LOW);  //reverse
+      digitalWrite(HLDIR, HIGH);
+      delay(drehzeit);
+      digitalWrite(HLDIR, LOW);/* code */
+      break;
+    case 6:
+      // Bewegung nach unten
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilUnten[m]);
+      Serial.print(" v  ");
+      Serial.print(diff_rechts);
+      Serial.print(" | ");
+      Serial.println(diff_links);
+      digitalWrite(VUDIR, HIGH);
+      digitalWrite(VODIR, LOW);
+      delay(drehzeit);
+      digitalWrite(VUDIR, LOW);
+      break;
+    case 7:
+      //Bewegung nach oben
+      for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilOben[m]);
+      Serial.print(" ^  ");
+      Serial.print(diff_links);
+      Serial.print(" | ");
+      Serial.println(diff_rechts);
+      digitalWrite(VODIR, HIGH);
+      digitalWrite(VUDIR, LOW);
+      delay(drehzeit);
+      digitalWrite(VODIR, LOW);
+      break;
+    default:
+      digitalWrite(HRDIR, LOW);
+      digitalWrite(HLDIR, LOW);
+      delay(100);
   }
-
-  // Vertikale Bewegung
-  if ( diff_rechts < neg_toleranz && diff_links < neg_toleranz ) {  //|| olint < ulint) && vuTaster){
-    // Bewegung nach unten
-    for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilUnten[m]);
-    Serial.print(" v  ");
-    Serial.print(diff_rechts);
-    Serial.print(" | ");
-    Serial.println(diff_links);
-    digitalWrite(VUDIR, HIGH);
-    digitalWrite(VODIR, LOW);
-    delay(drehzeit);
-    digitalWrite(VUDIR, LOW);
-  } else if ( diff_rechts > pos_toleranz && diff_links > pos_toleranz ) {  // || ulint < olint) && voTaster){
-    //Bewegung nach oben
-    for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilOben[m]);
-    Serial.print(" ^  ");
-    Serial.print(diff_links);
-    Serial.print(" | ");
-    Serial.println(diff_rechts);
-    digitalWrite(VODIR, HIGH);
-    digitalWrite(VUDIR, LOW);
-    delay(drehzeit);
-    digitalWrite(VODIR, LOW);
-  } else {
-    digitalWrite(VODIR, LOW);
-    digitalWrite(VUDIR, LOW);
-    delay(100);
-  }
+ 
 /*
   GrimsGrams
   for (int m = 0; m <= 7; m++) lc.setRow(0, m, pfeilLinks[m]);
